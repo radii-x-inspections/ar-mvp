@@ -406,6 +406,7 @@
   const backBtn = document.getElementById('back-btn');
 
   let xrayImage = null;
+  const DEFAULT_XRAY_URL = 'xray-default.jpg';
   let scaleFactor = 6;
   let overlayOpacity = 0.75;
   let animFrame = null;
@@ -445,6 +446,21 @@
     opacitySetup.value = this.value;
     opacityVal.textContent = this.value + '%';
   };
+
+  // Load default X-ray image so user can start AR without uploading
+  (function loadDefaultXray() {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      if (!xrayImage) {
+        xrayImage = img;
+        filenameEl.textContent = 'Default X-ray (tap above to replace)';
+        filenameEl.style.display = 'block';
+        startBtn.classList.add('ready');
+      }
+    };
+    img.src = DEFAULT_XRAY_URL;
+  })();
 
   // File load — using createObjectURL (more reliable on iPhone Safari)
   fileInput.onchange = (e) => {
