@@ -477,7 +477,10 @@
   let animFrame = null;
   let lastQR = null;
   let smoothPos = null;
-  const SMOOTH = 0.25;
+  const SMOOTH = 0.08;            // smaller = steadier (heavier smoothing)
+  const DEAD_XY = 2.5;            // px — ignore tiny position jitter
+  const DEAD_SIZE = 3;            // px — ignore tiny size jitter
+  const DEAD_ANGLE = 0.012;       // rad (~0.7°) — ignore tiny rotation jitter
 
   // Setup controls
   const scaleSetup = document.getElementById('scale-setup');
@@ -638,15 +641,29 @@
       // Rotation angle
       const angle = Math.atan2(tr.y - tl.y, tr.x - tl.x);
 
-      // Smooth position
+      // Smooth position with deadzone to eliminate micro-jitter
       const target = { x: center.x, y: center.y, size: imgSize, angle };
       if (!smoothPos) {
         smoothPos = { ...target };
       } else {
-        smoothPos.x += (target.x - smoothPos.x) * SMOOTH;
-        smoothPos.y += (target.y - smoothPos.y) * SMOOTH;
-        smoothPos.size += (target.size - smoothPos.size) * SMOOTH;
-        smoothPos.angle += (target.angle - smoothPos.angle) * SMOOTH;
+        const dx = target.x - smoothPos.x;
+        const dy = target.y - smoothPos.y;
+        const ds = target.size - smoothPos.size;
+        let da = target.angle - smoothPos.angle;
+        // unwrap angle delta to shortest path
+        while (da >  Math.PI) da -= 2 * Math.PI;
+        while (da < -Math.PI) da += 2 * Math.PI;
+
+        if (Math.hypot(dx, dy) > DEAD_XY) {
+          smoothPos.x += dx * SMOOTH;
+          smoothPos.y += dy * SMOOTH;
+        }
+        if (Math.abs(ds) > DEAD_SIZE) {
+          smoothPos.size += ds * SMOOTH;
+        }
+        if (Math.abs(da) > DEAD_ANGLE) {
+          smoothPos.angle += da * SMOOTH;
+        }
       }
 
       drawOverlay(smoothPos);
