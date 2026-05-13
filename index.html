@@ -5,27 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>AR X-Ray Viewer</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;500;700&display=swap');
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
   :root {
     --orange: #FF6B1A;
-    --dark: #0a0a0a;
-    --panel: rgba(10,10,10,0.85);
-    --border: rgba(255,107,26,0.3);
-    --text: #e0e0e0;
-    --dim: #666;
+    --orange-hover: #ff7d33;
+    --bg: #ffffff;
+    --bg-soft: #f5f5f7;
+    --text: #1d1d1f;
+    --text-dim: #86868b;
+    --separator: rgba(0,0,0,0.08);
+    --glass: rgba(255,255,255,0.72);
+    --glass-strong: rgba(255,255,255,0.88);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
   }
 
   body {
-    background: var(--dark);
+    background: var(--bg);
     color: var(--text);
-    font-family: 'Barlow', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     height: 100vh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    letter-spacing: -0.01em;
   }
 
   #setup-screen {
@@ -34,55 +40,56 @@
     align-items: center;
     justify-content: center;
     height: 100vh;
-    gap: 32px;
-    padding: 24px;
-    background: linear-gradient(160deg, #0a0a0a 60%, #1a0d00 100%);
+    gap: 24px;
+    padding: 32px 24px;
+    background: var(--bg);
   }
 
   .logo {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
     color: var(--orange);
     text-transform: uppercase;
-    opacity: 0.7;
   }
 
   h1 {
-    font-size: 28px;
+    font-size: 34px;
     font-weight: 700;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.025em;
     text-align: center;
-    line-height: 1.2;
+    line-height: 1.1;
+    color: var(--text);
   }
 
   h1 span { color: var(--orange); }
 
   .subtitle {
-    font-size: 13px;
-    color: var(--dim);
+    font-size: 15px;
+    color: var(--text-dim);
     text-align: center;
-    max-width: 280px;
-    line-height: 1.6;
-    font-weight: 300;
+    max-width: 320px;
+    line-height: 1.45;
+    font-weight: 400;
+    margin-bottom: 8px;
   }
 
   .upload-zone {
     width: 100%;
-    max-width: 320px;
-    border: 1px dashed var(--border);
-    border-radius: 4px;
+    max-width: 340px;
+    border: 1.5px dashed rgba(0,0,0,0.15);
+    border-radius: 14px;
     padding: 28px 20px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: border-color 0.2s, background 0.2s;
     position: relative;
-    background: rgba(255,107,26,0.03);
+    background: var(--bg-soft);
   }
 
-  .upload-zone:hover {
+  .upload-zone:hover, .upload-zone:active {
     border-color: var(--orange);
-    background: rgba(255,107,26,0.06);
+    background: rgba(255,107,26,0.04);
   }
 
   .upload-zone input {
@@ -95,87 +102,120 @@
   }
 
   .upload-icon {
-    font-size: 32px;
+    font-size: 28px;
     margin-bottom: 10px;
     display: block;
   }
 
   .upload-zone p {
-    font-size: 13px;
-    color: var(--dim);
-    font-weight: 300;
+    font-size: 14px;
+    color: var(--text-dim);
+    font-weight: 500;
   }
 
   .upload-zone .filename {
     margin-top: 8px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--orange);
+    font-weight: 500;
     display: none;
   }
 
   .controls-row {
     display: flex;
-    gap: 16px;
+    gap: 14px;
     width: 100%;
-    max-width: 320px;
+    max-width: 340px;
   }
 
   .control-group {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
+    background: var(--bg-soft);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+
+  .control-group .label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .control-group label {
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--dim);
-    font-family: 'Share Tech Mono', monospace;
-  }
-
-  .control-group input[type="range"] {
-    width: 100%;
-    accent-color: var(--orange);
-    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: none;
+    letter-spacing: 0;
   }
 
   .control-group .val {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-    color: var(--orange);
-    text-align: right;
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Apple-style range slider */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: rgba(0,0,0,0.12);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2), 0 0 0 0.5px rgba(0,0,0,0.04);
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  input[type="range"]::-webkit-slider-thumb:active { transform: scale(1.1); }
+  input[type="range"]::-moz-range-thumb {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    border: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    cursor: pointer;
   }
 
   .start-btn {
     width: 100%;
-    max-width: 320px;
-    padding: 16px;
+    max-width: 340px;
+    padding: 15px;
     background: var(--orange);
-    color: #000;
+    color: #fff;
     border: none;
-    border-radius: 3px;
-    font-family: 'Barlow', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
     cursor: pointer;
-    transition: all 0.15s;
-    opacity: 0.4;
+    transition: background 0.15s, transform 0.1s, opacity 0.2s;
+    opacity: 0.35;
     pointer-events: none;
+    box-shadow: var(--shadow-sm);
+    margin-top: 8px;
   }
 
   .start-btn.ready {
     opacity: 1;
     pointer-events: all;
   }
-
-  .start-btn.ready:hover {
-    background: #ff8c45;
-  }
+  .start-btn.ready:hover { background: var(--orange-hover); }
+  .start-btn.ready:active { transform: scale(0.98); }
 
   /* AR SCREEN */
   #ar-screen {
@@ -204,108 +244,127 @@
   /* HUD */
   .hud-top {
     position: absolute;
-    top: 0; left: 0; right: 0;
-    padding: 16px 20px;
+    top: env(safe-area-inset-top, 12px); left: 12px; right: 12px;
+    padding: 10px 14px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+    background: var(--glass);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-radius: 14px;
+    box-shadow: var(--shadow-md);
     z-index: 10;
   }
 
   .hud-logo {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 3px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
     color: var(--orange);
-    opacity: 0.8;
-  }
-
-  .status-badge {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 2px;
-    padding: 5px 10px;
-    border-radius: 2px;
-    border: 1px solid currentColor;
     text-transform: uppercase;
   }
 
+  .status-badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0;
+    padding: 4px 10px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
   .status-badge.searching {
-    color: var(--dim);
-    border-color: var(--dim);
+    color: var(--text-dim);
+    background: rgba(0,0,0,0.05);
     animation: pulse 1.5s ease-in-out infinite;
   }
 
   .status-badge.locked {
     color: var(--orange);
-    border-color: var(--orange);
+    background: rgba(255,107,26,0.12);
   }
 
   @keyframes pulse {
-    0%, 100% { opacity: 0.5; }
+    0%, 100% { opacity: 0.55; }
     50% { opacity: 1; }
   }
 
   .hud-controls {
     position: absolute;
-    top: 44px; left: 0; right: 0;
-    padding: 12px 20px 16px;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.65), transparent);
+    top: calc(env(safe-area-inset-top, 12px) + 60px);
+    left: 12px; right: 12px;
+    padding: 14px 16px;
+    background: var(--glass);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-radius: 14px;
+    box-shadow: var(--shadow-md);
     z-index: 10;
     display: flex;
-    align-items: flex-end;
-    gap: 16px;
+    align-items: center;
+    gap: 14px;
   }
 
   .slider-wrap {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
   }
 
   .slider-wrap label {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: var(--dim);
-    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
   }
-
-  .slider-wrap input[type="range"] {
-    width: 100%;
-    accent-color: var(--orange);
+  .slider-wrap label span {
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
   }
 
   .back-btn {
-    padding: 10px 16px;
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.2);
+    padding: 8px 14px;
+    background: rgba(0,0,0,0.06);
+    border: none;
     color: var(--text);
-    border-radius: 3px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 2px;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    text-transform: uppercase;
     white-space: nowrap;
+    transition: background 0.15s;
   }
+  .back-btn:hover { background: rgba(0,0,0,0.1); }
+  .back-btn:active { background: rgba(0,0,0,0.14); }
 
   /* Crosshair */
   .crosshair {
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 60px; height: 60px;
+    width: 56px; height: 56px;
     pointer-events: none;
     z-index: 5;
+    opacity: 0.6;
   }
 
   .crosshair::before, .crosshair::after {
     content: '';
     position: absolute;
-    background: rgba(255,107,26,0.5);
+    background: rgba(255,255,255,0.85);
   }
 
   .crosshair::before {
@@ -320,15 +379,14 @@
 
   .corner-tl, .corner-tr, .corner-bl, .corner-br {
     position: absolute;
-    width: 12px; height: 12px;
-    border-color: var(--orange);
+    width: 10px; height: 10px;
+    border-color: rgba(255,255,255,0.9);
     border-style: solid;
-    opacity: 0.7;
   }
-  .corner-tl { top: 0; left: 0; border-width: 2px 0 0 2px; }
-  .corner-tr { top: 0; right: 0; border-width: 2px 2px 0 0; }
-  .corner-bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
-  .corner-br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+  .corner-tl { top: 0; left: 0; border-width: 1.5px 0 0 1.5px; }
+  .corner-tr { top: 0; right: 0; border-width: 1.5px 1.5px 0 0; }
+  .corner-bl { bottom: 0; left: 0; border-width: 0 0 1.5px 1.5px; }
+  .corner-br { bottom: 0; right: 0; border-width: 0 1.5px 1.5px 0; }
 </style>
 </head>
 <body>
@@ -341,21 +399,28 @@
 
   <div class="upload-zone" id="upload-zone">
     <input type="file" id="file-input" accept="image/*">
-    <span class="upload-icon">📂</span>
+    <svg class="upload-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color: #86868b; margin-bottom: 8px;">
+      <path d="M12 16V4m0 0l-4 4m4-4l4 4"></path>
+      <path d="M20 16v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"></path>
+    </svg>
     <p>Tap to load X-ray image</p>
     <div class="filename" id="filename"></div>
   </div>
 
   <div class="controls-row">
     <div class="control-group">
-      <label>Image Scale</label>
+      <div class="label-row">
+        <label>Scale</label>
+        <span class="val" id="scale-val">6×</span>
+      </div>
       <input type="range" id="scale-setup" min="1" max="20" value="6" step="0.5">
-      <div class="val" id="scale-val">6×</div>
     </div>
     <div class="control-group">
-      <label>Opacity</label>
+      <div class="label-row">
+        <label>Opacity</label>
+        <span class="val" id="opacity-val">75%</span>
+      </div>
       <input type="range" id="opacity-setup" min="10" max="100" value="75" step="5">
-      <div class="val" id="opacity-val">75%</div>
     </div>
   </div>
 
@@ -368,8 +433,8 @@
   <canvas id="canvas"></canvas>
 
   <div class="hud-top">
-    <div class="hud-logo">Radii-X AR</div>
-    <div class="status-badge searching" id="status">Searching QR...</div>
+    <div class="hud-logo">Radii-X</div>
+    <div class="status-badge searching" id="status">Searching</div>
   </div>
 
   <div class="crosshair">
@@ -388,7 +453,7 @@
       <label>Opacity <span id="opacity-live">75%</span></label>
       <input type="range" id="opacity-ar" min="10" max="100" value="75" step="5">
     </div>
-    <button class="back-btn" id="back-btn">← Back</button>
+    <button class="back-btn" id="back-btn">Done</button>
   </div>
 </div>
 
@@ -558,7 +623,7 @@
 
     if (qr) {
       lastQR = qr;
-      statusEl.textContent = 'QR LOCKED';
+      statusEl.textContent = 'Locked';
       statusEl.className = 'status-badge locked';
 
       const tl = mapPoint(qr.location.topLeftCorner, vw, vh, cw, ch);
@@ -590,11 +655,11 @@
     } else {
       // Keep last position fading
       if (smoothPos) {
-        statusEl.textContent = 'Searching QR...';
+        statusEl.textContent = 'Searching';
         statusEl.className = 'status-badge searching';
         drawOverlay(smoothPos);
       } else {
-        statusEl.textContent = 'Searching QR...';
+        statusEl.textContent = 'Searching';
         statusEl.className = 'status-badge searching';
       }
     }
