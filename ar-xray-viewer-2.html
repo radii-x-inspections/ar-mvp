@@ -604,7 +604,9 @@
   }
 
   let offscreen = document.createElement('canvas');
-  let offCtx = offscreen.getContext('2d');
+  let offCtx = offscreen.getContext('2d', { willReadFrequently: true });
+  const SCAN_WIDTH = 480;   // downscale target for jsQR — much faster on phones
+  let lostFrames = 0;       // consecutive frames without a QR detection
 
   function loop() {
     animFrame = requestAnimationFrame(loop);
@@ -615,12 +617,15 @@
     const cw = canvas.width;
     const ch = canvas.height;
 
-    offscreen.width = vw;
-    offscreen.height = vh;
-    offCtx.drawImage(video, 0, 0, vw, vh);
+    // Downscale to SCAN_WIDTH for jsQR — dramatically faster while keeping decode reliable
+    const scanW = Math.min(SCAN_WIDTH, vw);
+    const scanH = Math.round(vh * (scanW / vw));
+    offscreen.width = scanW;
+    offscreen.height = scanH;
+    offCtx.drawImage(video, 0, 0, scanW, scanH);
 
-    const imageData = offCtx.getImageData(0, 0, vw, vh);
-    const qr = jsQR(imageData.data, vw, vh, { inversionAttempts: 'dontInvert' });
+    const imageData = offCtx.getImageData(0, 0, scanW, scanH);
+    const qr = jsQR(imageData.data, scanW, scanH, { inversionAttempts: 'dontInvert' });
 
     ctx.clearRect(0, 0, cw, ch);
 
@@ -629,10 +634,14 @@
       statusEl.textContent = 'Locked';
       statusEl.className = 'status-badge locked';
 
-      const tl = mapPoint(qr.location.topLeftCorner, vw, vh, cw, ch);
-      const tr = mapPoint(qr.location.topRightCorner, vw, vh, cw, ch);
-      const br = mapPoint(qr.location.bottomRightCorner, vw, vh, cw, ch);
-      const bl = mapPoint(qr.location.bottomLeftCorner, vw, vh, cw, ch);
+      // If we just re-acquired after losing it, snap immediately
+      if (lostFrames > 5) smoothPos = null;
+      lostFrames = 0;
+
+      const tl = mapPoint(qr.location.topLeftCorner, scanW, scanH, cw, ch);
+      const tr = mapPoint(qr.location.topRightCorner, scanW, scanH, cw, ch);
+      const br = mapPoint(qr.location.bottomRightCorner, scanW, scanH, cw, ch);
+      const bl = mapPoint(qr.location.bottomLeftCorner, scanW, scanH, cw, ch);
 
       const center = mid(mid(tl, br), mid(tr, bl));
       const qrSize = (dist(tl, tr) + dist(bl, br)) / 2;
@@ -670,6 +679,7 @@
       drawQRCorners(tl, tr, br, bl);
 
     } else {
+      lostFrames++;
       // Keep last position fading
       if (smoothPos) {
         statusEl.textContent = 'Searching';
